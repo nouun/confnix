@@ -1,0 +1,47 @@
+#! /bin/sh
+
+buildUser() {
+  git add .
+  nix build --impure ".#homeManagerConfigurations.$USER.activationPackage" 
+  ./result/activate                                                        
+}
+
+updateFlake() {
+  nix flake update
+}
+
+buildHost() {
+  git add .
+  nixos-rebuild switch --flake ".#$1"
+}
+
+while getopts ":udh:m" ARG; do
+  case "$ARG" in
+    u)
+      buildUser
+      exit ;;
+    d)
+      updateFlake
+      exit ;;
+    h)
+      buildHost "${OPTARG}"
+      exit ;;
+    m)
+      buildHost "mbp"
+      exit ;;
+    *)
+      printf "error"
+      exit ;;
+  esac
+done
+
+# #host
+# sudo nixos-rebuild switch --flake ".#mbp"
+
+# #user
+# nix build --impure ".#homeManagerConfigurations.$USER.activationPackage"
+# ./result/activate
+
+# #update
+# nux flake update
+
